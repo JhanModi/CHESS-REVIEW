@@ -78,6 +78,14 @@ reorder by priority. "Needs" flags external prerequisites.
 
 ## Changelog
 
+### 2026-07-13 (deploy prep)
+- Free-tier deployment made ready: `render.yaml` (API as native-Node free web
+  service — build/start commands validated locally), `vercel.json` (web
+  monorepo build), `docs/DEPLOYMENT.md` runbook (Vercel + Render + Neon +
+  Clerk). API now reads `$PORT` (platform standard) before `API_PORT`. Redis
+  stays omitted (in-process fallback). Awaiting user's free accounts + a
+  GitHub remote to go live. This is prep for **M14**, not the full milestone.
+
 ### 2026-07-13 (later)
 - **Best Move Suggestion** shipped on the review page (feature request,
   outside the numbered milestones): per-move learning card (per-classification

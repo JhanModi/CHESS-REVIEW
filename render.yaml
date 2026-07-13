@@ -1,0 +1,36 @@
+# Render Blueprint — deploys the Tempo API (NestJS) as a free native-Node
+# web service. The Next.js web app deploys separately on Vercel; Postgres is
+# hosted free on Neon. See docs/DEPLOYMENT.md for the full walkthrough.
+#
+# Redis is intentionally omitted: with REDIS_URL unset the API runs its job
+# queue and cache in-process (fine for a single free instance).
+services:
+  - type: web
+    name: tempo-api
+    runtime: node
+    plan: free
+    rootDir: .
+    # Build the workspace packages the API depends on, generate the Prisma
+    # client, then compile the API. turbo resolves ^build ordering.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @tempo/db generate && pnpm turbo run build --filter=api
+    # Apply pending migrations (idempotent) then boot. No dotenv file in prod —
+    # env comes from Render; DATABASE_URL is injected below.
+    startCommand: pnpm --filter @tempo/db exec prisma migrate deploy && node apps/api/dist/main.js
+    healthCheckPath: /v1/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22.12.0"
+      - key: NODE_ENV
+        value: production
+      # Render injects $PORT automatically; the API reads it (see main.ts).
+      # Secrets set in the Render dashboard (not committed):
+      - key: DATABASE_URL
+        sync: false # Neon pooled connection string
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_JWT_KEY
+        sync: false
+      - key: WEB_URL
+        sync: false # the Vercel URL, for CORS
+      - key: CHESSCOM_USER_AGENT
+        sync: false

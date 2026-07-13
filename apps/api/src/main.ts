@@ -22,7 +22,9 @@ async function bootstrap(): Promise<void> {
     .build();
   SwaggerModule.setup("docs", app, SwaggerModule.createDocument(app, swaggerConfig));
 
-  const port = Number(process.env.API_PORT ?? 3001);
+  // PORT is the platform-standard var (Render/Railway/Fly inject it);
+  // API_PORT is our local-dev override.
+  const port = Number(process.env.PORT ?? process.env.API_PORT ?? 3001);
   await app.listen(port);
   new Logger("Bootstrap").log(`Tempo API listening on :${port} (docs at /docs)`);
 }
