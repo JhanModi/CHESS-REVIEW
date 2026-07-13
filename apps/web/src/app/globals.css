@@ -1,0 +1,150 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Tempo design tokens ─────────────────────────────────────────────────
+   Dark-first. Violet-indigo primary, warm amber signal colour, slate-blue
+   neutrals. Board and classification colours are first-class tokens.     */
+
+:root {
+  --background: oklch(0.985 0.002 90);
+  --foreground: oklch(0.21 0.02 270);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 270);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.02 270);
+  --primary: oklch(0.54 0.21 288);
+  --primary-foreground: oklch(0.98 0.005 290);
+  --secondary: oklch(0.95 0.01 280);
+  --secondary-foreground: oklch(0.32 0.05 285);
+  --muted: oklch(0.955 0.006 270);
+  --muted-foreground: oklch(0.5 0.02 270);
+  --accent: oklch(0.94 0.02 288);
+  --accent-foreground: oklch(0.32 0.08 288);
+  --destructive: oklch(0.55 0.21 25);
+  --destructive-foreground: oklch(0.98 0.005 25);
+  --border: oklch(0.9 0.008 270);
+  --input: oklch(0.9 0.008 270);
+  --ring: oklch(0.54 0.21 288);
+  --signal: oklch(0.72 0.15 70);
+
+  --board-light: oklch(0.9 0.025 85);
+  --board-dark: oklch(0.62 0.055 270);
+  --board-highlight: oklch(0.82 0.14 95 / 55%);
+  --board-check: oklch(0.6 0.2 25 / 60%);
+  --board-arrow: oklch(0.54 0.21 288 / 75%);
+
+  --cls-brilliant: oklch(0.68 0.14 200);
+  --cls-great: oklch(0.6 0.15 250);
+  --cls-best: oklch(0.62 0.15 150);
+  --cls-excellent: oklch(0.66 0.12 150);
+  --cls-good: oklch(0.6 0.03 270);
+  --cls-book: oklch(0.6 0.06 70);
+  --cls-inaccuracy: oklch(0.75 0.13 95);
+  --cls-mistake: oklch(0.68 0.16 55);
+  --cls-blunder: oklch(0.55 0.21 25);
+  --cls-miss: oklch(0.62 0.18 35);
+  --cls-forced: oklch(0.55 0.02 270);
+
+  --eval-white: oklch(0.97 0.005 90);
+  --eval-black: oklch(0.25 0.015 270);
+
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: oklch(0.155 0.015 272);
+  --foreground: oklch(0.93 0.008 280);
+  --card: oklch(0.195 0.018 272);
+  --card-foreground: oklch(0.93 0.008 280);
+  --popover: oklch(0.21 0.02 272);
+  --popover-foreground: oklch(0.93 0.008 280);
+  --primary: oklch(0.66 0.18 288);
+  --primary-foreground: oklch(0.14 0.02 288);
+  --secondary: oklch(0.26 0.02 275);
+  --secondary-foreground: oklch(0.9 0.01 280);
+  --muted: oklch(0.24 0.018 272);
+  --muted-foreground: oklch(0.65 0.015 275);
+  --accent: oklch(0.3 0.04 288);
+  --accent-foreground: oklch(0.92 0.02 288);
+  --destructive: oklch(0.62 0.19 25);
+  --destructive-foreground: oklch(0.98 0.005 25);
+  --border: oklch(0.28 0.02 272);
+  --input: oklch(0.3 0.02 272);
+  --ring: oklch(0.66 0.18 288);
+  --signal: oklch(0.78 0.14 75);
+
+  --board-light: oklch(0.72 0.03 80);
+  --board-dark: oklch(0.42 0.05 275);
+  --board-highlight: oklch(0.8 0.14 95 / 45%);
+  --board-check: oklch(0.6 0.2 25 / 65%);
+  --board-arrow: oklch(0.72 0.16 288 / 80%);
+
+  --cls-brilliant: oklch(0.75 0.13 200);
+  --cls-great: oklch(0.68 0.14 255);
+  --cls-best: oklch(0.7 0.15 150);
+  --cls-excellent: oklch(0.72 0.11 150);
+  --cls-good: oklch(0.68 0.02 270);
+  --cls-book: oklch(0.68 0.06 70);
+  --cls-inaccuracy: oklch(0.8 0.13 95);
+  --cls-mistake: oklch(0.72 0.15 55);
+  --cls-blunder: oklch(0.63 0.2 25);
+  --cls-miss: oklch(0.68 0.17 35);
+  --cls-forced: oklch(0.6 0.02 270);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-signal: var(--signal);
+
+  --color-board-light: var(--board-light);
+  --color-board-dark: var(--board-dark);
+
+  --color-cls-brilliant: var(--cls-brilliant);
+  --color-cls-great: var(--cls-great);
+  --color-cls-best: var(--cls-best);
+  --color-cls-excellent: var(--cls-excellent);
+  --color-cls-good: var(--cls-good);
+  --color-cls-book: var(--cls-book);
+  --color-cls-inaccuracy: var(--cls-inaccuracy);
+  --color-cls-mistake: var(--cls-mistake);
+  --color-cls-blunder: var(--cls-blunder);
+  --color-cls-miss: var(--cls-miss);
+  --color-cls-forced: var(--cls-forced);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

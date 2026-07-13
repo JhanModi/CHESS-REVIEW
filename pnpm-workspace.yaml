@@ -14,3 +14,4 @@ allowBuilds:
   msgpackr-extract: true
   protobufjs: true
   "@scarf/scarf": false
+  stockfish: false
