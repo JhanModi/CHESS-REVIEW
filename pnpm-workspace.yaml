@@ -1,0 +1,15 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+allowBuilds:
+  "@prisma/client": true
+  "@prisma/engines": true
+  prisma: true
+  esbuild: true
+  sharp: true
+  "@tailwindcss/oxide": true
+  "@nestjs/core": true
+  unrs-resolver: true
+  msgpackr-extract: true
+  protobufjs: true

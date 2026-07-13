@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+.next/
+.turbo/
+out/
+coverage/
+
+# env — real secrets never committed
+.env
+.env.local
+.env.*.local
+
+# prisma
+packages/db/generated/
+
+# engine + piece assets are copied from node_modules / fetched at setup
+apps/web/public/stockfish/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log

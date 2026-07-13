@@ -1,0 +1,375 @@
+// Tempo — database schema
+// Conventions: cuid ids, white-POV centipawn scores, EPD = FEN without counters.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────── enums ──────
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum OrgRole {
+  OWNER
+  COACH
+  STUDENT
+  MEMBER
+}
+
+enum GameSource {
+  UPLOAD
+  PASTE
+  LICHESS
+  CHESSCOM
+}
+
+enum GameResult {
+  WHITE_WIN
+  BLACK_WIN
+  DRAW
+  UNKNOWN
+}
+
+enum Color {
+  WHITE
+  BLACK
+}
+
+enum AnalysisStatus {
+  PENDING
+  PARTIAL
+  COMPLETE
+  FAILED
+}
+
+enum MoveClassification {
+  BRILLIANT
+  GREAT
+  BEST
+  EXCELLENT
+  GOOD
+  BOOK
+  INACCURACY
+  MISTAKE
+  BLUNDER
+  MISS
+  FORCED
+}
+
+enum ImportStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  MASTER
+}
+
+// ─────────────────────────────────────────────────────── identity & orgs ────
+
+model User {
+  id          String   @id @default(cuid())
+  clerkId     String   @unique
+  email       String   @unique
+  displayName String?
+  plan        Plan     @default(FREE)
+  /// User preferences: classification thresholds, board theme, language, …
+  settings    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  games        Game[]
+  importJobs   ImportJob[]
+  memberships  Membership[]
+  puzzles      Puzzle[]
+  subscription Subscription?
+  apiKeys      ApiKey[]
+  webhooks     Webhook[]
+}
+
+model Organization {
+  id         String   @id @default(cuid())
+  clerkOrgId String?  @unique
+  name       String
+  createdAt  DateTime @default(now())
+
+  memberships Membership[]
+}
+
+model Membership {
+  id     String  @id @default(cuid())
+  userId String
+  orgId  String
+  role   OrgRole @default(MEMBER)
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+}
+
+// ─────────────────────────────────────────────────────────── games ──────────
+
+model Game {
+  id         String     @id @default(cuid())
+  userId     String
+  source     GameSource
+  /// Id at the source platform (lichess game id, chess.com uuid) for idempotent sync
+  externalId String?
+  /// Non-null when the game is publicly shared
+  shareSlug  String?    @unique
+  pgn        String
+  whiteName  String
+  blackName  String
+  whiteElo   Int?
+  blackElo   Int?
+  /// Which side the owning user played, when known
+  userColor  Color?
+  result     GameResult @default(UNKNOWN)
+  timeControl String?
+  eco        String?
+  openingId  String?
+  playedAt   DateTime?
+  createdAt  DateTime   @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  opening  Opening?  @relation(fields: [openingId], references: [id])
+  moves    Move[]
+  analysis Analysis?
+  puzzles  Puzzle[]
+
+  @@unique([userId, source, externalId])
+  @@index([userId, playedAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model Move {
+  id           String  @id @default(cuid())
+  gameId       String
+  /// 1-based: ply 1 = White's first move
+  ply          Int
+  san          String
+  uci          String
+  fenAfter     String
+  epdAfter     String
+  clockSeconds Int?
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, ply])
+}
+
+// ─────────────────────────────────────────────────────────── analysis ───────
+
+model Analysis {
+  id            String         @id @default(cuid())
+  gameId        String         @unique
+  status        AnalysisStatus @default(PENDING)
+  /// e.g. "stockfish-18-lite-wasm"
+  engineId      String
+  targetDepth   Int
+  /// Highest ply with a stored MoveAnalysis — resume cursor
+  lastPly       Int            @default(0)
+  accuracyWhite Float?
+  accuracyBlack Float?
+  /// Average centipawn loss
+  acplWhite     Int?
+  acplBlack     Int?
+  /// Turning points, best/worst move, phase breakdown — computed server-side
+  summary       Json?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  game  Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  moves MoveAnalysis[]
+}
+
+model MoveAnalysis {
+  id         String @id @default(cuid())
+  analysisId String
+  ply        Int
+
+  // Raw engine output (white POV). "before" = position the move was played in.
+  evalBeforeCp   Int?
+  evalBeforeMate Int?
+  evalAfterCp    Int?
+  evalAfterMate  Int?
+  bestMoveUci    String
+  /// Space-separated UCI moves of the engine's principal variation
+  bestLinePv     String
+  secondMoveUci  String?
+  secondCp       Int?
+  secondMate     Int?
+  depth          Int
+
+  // Server-derived (ADR 007)
+  winBefore      Float
+  winAfter       Float
+  cpLoss         Int
+  accuracy       Float
+  classification MoveClassification
+
+  analysis     Analysis        @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  explanations AiExplanation[]
+
+  @@unique([analysisId, ply])
+}
+
+/// Cross-user position evaluation cache (ADR 006)
+model EngineEvaluation {
+  id          String   @id @default(cuid())
+  epd         String   @unique
+  engineId    String
+  depth       Int
+  evalCp      Int?
+  evalMate    Int?
+  bestMoveUci String
+  pv          String
+  /// Additional MultiPV lines: [{ moveUci, cp?, mate?, pv }]
+  multiPv     Json?
+  nodes       BigInt?
+  updatedAt   DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────── openings ───────
+
+model Opening {
+  id       String @id @default(cuid())
+  eco      String
+  name     String
+  pgn      String
+  epd      String @unique
+  plyCount Int
+
+  games Game[]
+
+  @@index([eco])
+}
+
+// ─────────────────────────────────────────────────────────── imports ────────
+
+model ImportJob {
+  id            String       @id @default(cuid())
+  userId        String
+  source        GameSource
+  username      String
+  status        ImportStatus @default(QUEUED)
+  totalGames    Int?
+  gamesImported Int          @default(0)
+  gamesSkipped  Int          @default(0)
+  /// Incremental sync cursor (lichess: ms timestamp; chess.com: last archive URL)
+  cursor        String?
+  error         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+// ───────────────────────────────────────────────────── ai explanations ──────
+
+model AiExplanation {
+  id             String     @id @default(cuid())
+  moveAnalysisId String
+  provider       String
+  model          String
+  skillLevel     SkillLevel
+  language       String     @default("en")
+  content        String
+  createdAt      DateTime   @default(now())
+
+  moveAnalysis MoveAnalysis @relation(fields: [moveAnalysisId], references: [id], onDelete: Cascade)
+
+  @@unique([moveAnalysisId, provider, model, skillLevel, language])
+}
+
+// ─────────────────────────────────────────────────────────── billing ────────
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  stripeCustomerId     String    @unique
+  stripeSubscriptionId String?   @unique
+  plan                 Plan      @default(FREE)
+  status               String    @default("inactive")
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments Payment[]
+}
+
+model Payment {
+  id                    String   @id @default(cuid())
+  subscriptionId        String
+  stripePaymentIntentId String   @unique
+  amountCents           Int
+  currency              String
+  status                String
+  createdAt             DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+}
+
+// ──────────────────────────────────────────────── programmatic access ───────
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  keyHash    String    @unique
+  scopes     String[]
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  revokedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Webhook {
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  secret    String
+  /// e.g. ["analysis.completed", "import.completed"]
+  events    String[]
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────── training ───────
+
+model Puzzle {
+  id           String   @id @default(cuid())
+  userId       String
+  sourceGameId String?
+  fen          String
+  solutionUci  String[]
+  motif        String?
+  createdAt    DateTime @default(now())
+
+  user       User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceGame Game? @relation(fields: [sourceGameId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
