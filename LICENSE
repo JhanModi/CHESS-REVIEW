@@ -1,0 +1,29 @@
+Copyright (c) 2026 Jhan Modi. All rights reserved.
+
+This repository and its source code (the "Software") are published publicly
+for demonstration, evaluation, and portfolio purposes only. No license or
+right to use, copy, modify, merge, publish, distribute, sublicense, or sell
+copies of the Software is granted, except where required by the licenses of
+the third-party components listed below.
+
+You are welcome to read and reference the code. Any other use requires the
+prior written permission of the copyright holder.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+OR OTHER DEALINGS IN THE SOFTWARE.
+
+--------------------------------------------------------------------------
+Third-party components (governed by their own licenses, not the terms above)
+--------------------------------------------------------------------------
+
+- Stockfish 18 — GPL-3.0. Served as an unmodified, separate WebAssembly
+  artifact and communicated with over the UCI protocol.
+  https://github.com/official-stockfish/Stockfish
+- chessops — GPL-3.0-or-later. Used for move generation / PGN parsing.
+  https://github.com/niklasf/chessops
+- rhosgfx chess piece set — CC0-1.0 (public domain dedication).
+- lichess-org/chess-openings ECO dataset — public domain.

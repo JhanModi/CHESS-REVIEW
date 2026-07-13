@@ -5,10 +5,8 @@ Lichess/Chess.com/PGN, analyse them with Stockfish, and understand every move.
 This document is the architecture of record; decisions link to ADRs in
 [docs/adr/](adr/).
 
-> Project-management companions live at the repo root:
-> [CLAUDE.md](../CLAUDE.md) (session rules), [PRD.md](../PRD.md) (product
-> scope), [PROGRESS.md](../PROGRESS.md) (milestone roadmap + changelog),
-> [MEMORY.md](../MEMORY.md) (durable facts).
+> See also: [README](../README.md) (overview + roadmap) and
+> [PRD.md](../PRD.md) (product scope).
 
 ## 1. Topology
 

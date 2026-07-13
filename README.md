@@ -6,7 +6,9 @@ get chess.com-Game-Review-class insight — accuracy, move classifications
 (brilliant → blunder), turning points, opening recognition and trend
 dashboards — with original UI, branding and implementation.
 
-![stack](https://img.shields.io/badge/stack-Next.js%2015%20·%20NestJS%20·%20Prisma%20·%20Stockfish%2018-6d5ae6)
+![CI](https://github.com/JhanModi/CHESS-REVIEW/actions/workflows/ci.yml/badge.svg)
+&nbsp;![stack](https://img.shields.io/badge/stack-Next.js%2015%20·%20NestJS%20·%20Prisma%20·%20Stockfish%2018-6d5ae6)
+&nbsp;![license](https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey)
 
 ## What works today
 
@@ -82,9 +84,30 @@ for networkless verification) `CLERK_JWT_KEY`.
 | `pnpm --filter @tempo/chess-core build:openings` | regenerate the opening book from the TSVs |
 | `pnpm --filter @tempo/db studio` | Prisma Studio |
 
-## Licensing notes
+## Roadmap
 
-App code is proprietary to you. Bundled third-party artifacts: **Stockfish 18**
+The foundational product above works today. Designed next — each against
+interfaces and schema already present in the repo:
+
+- **Server-side engine fleet** — native Stockfish workers behind the same
+  `EngineAdapter`, streaming progress over SSE for heavy batch analysis
+- **Tactical & endgame detection** — motif tags (forks, pins, skewers, back-rank,
+  Greek gift, sacrifices; Lucena, Philidor, opposition, …)
+- **AI coach** — per-move natural-language explanation at four skill levels,
+  multi-language, streaming, provider-switchable (Anthropic / OpenAI / Gemini)
+- **Training** — puzzles generated from your own blunders, guess-the-best-move,
+  spaced repetition
+- **Teams & coaching** — organizations, coach/student mode, study collections
+- **Platform** — Stripe tiers, admin dashboard, public API keys + webhooks,
+  containerized deployment + CDN
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [PRD.md](PRD.md) for the
+full design.
+
+## License & credits
+
+Source-available for review — **all rights reserved** (see [LICENSE](LICENSE)).
+Bundled third-party artifacts: **Stockfish 18**
 (GPL-3.0) is served as an unmodified separate WASM artifact and spoken to over
 UCI; **rhosgfx** piece set (CC0); **lichess-org/chess-openings** data (public
 domain); chessops (GPL-3.0-or-later — review before commercial distribution,

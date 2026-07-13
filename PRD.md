@@ -52,7 +52,7 @@ analysis platforms, not a clone of any.
   distribution, top openings, recent games.
 - Public share pages. Auth via Clerk (Google + email/password).
 
-### Planned (mapped to milestones in PROGRESS.md)
+### Planned (mapped to the roadmap in the README)
 - **M7** Server engine fleet: native Stockfish workers, SSE progress, spot
   re-verification of client evals.
 - **M8** Tactical + endgame pattern detection (forks, pins, skewers,

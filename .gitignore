@@ -24,3 +24,12 @@ apps/web/public/stockfish/
 .DS_Store
 Thumbs.db
 *.log
+
+# local tooling config
+.claude/
+
+# internal working notes — kept on-disk for development, not part of the
+# public repo (see README for the public docs)
+/CLAUDE.md
+/MEMORY.md
+/PROGRESS.md
