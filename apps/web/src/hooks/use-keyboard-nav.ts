@@ -5,7 +5,9 @@ import { useReviewStore } from "@/stores/review-store";
 
 /**
  * Review-page shortcuts: ←/→ step, Home/End (or ↑/↓) jump, f flip,
- * space toggles autoplay. Ignored while typing in inputs.
+ * space toggles autoplay. While an engine-line preview is open, ←/→ step the
+ * variation, space pauses/resumes it and Escape closes it.
+ * Ignored while typing in inputs.
  */
 export function useKeyboardNav(): void {
   useEffect(() => {
@@ -33,8 +35,13 @@ export function useKeyboardNav(): void {
         case "f":
           store.flip();
           break;
+        case "Escape":
+          if (!store.variation) return;
+          store.exitVariation();
+          break;
         case " ":
-          store.setAutoplay(!store.autoplay);
+          if (store.variation) store.setVariationPlaying(!store.variation.playing);
+          else store.setAutoplay(!store.autoplay);
           break;
         default:
           return;
@@ -46,12 +53,20 @@ export function useKeyboardNav(): void {
   }, []);
 }
 
-/** Drives autoplay while enabled. */
-export function useAutoplay(intervalMs = 1100): void {
+/** Drives game autoplay and engine-line playback while enabled. */
+export function useAutoplay(intervalMs = 1100, variationIntervalMs = 900): void {
   const autoplay = useReviewStore((s) => s.autoplay);
+  const variationPlaying = useReviewStore((s) => s.variation?.playing ?? false);
+
   useEffect(() => {
     if (!autoplay) return;
     const id = setInterval(() => useReviewStore.getState().next(), intervalMs);
     return () => clearInterval(id);
   }, [autoplay, intervalMs]);
+
+  useEffect(() => {
+    if (!variationPlaying) return;
+    const id = setInterval(() => useReviewStore.getState().variationNext(), variationIntervalMs);
+    return () => clearInterval(id);
+  }, [variationPlaying, variationIntervalMs]);
 }

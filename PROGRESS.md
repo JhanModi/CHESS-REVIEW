@@ -78,6 +78,17 @@ reorder by priority. "Needs" flags external prerequisites.
 
 ## Changelog
 
+### 2026-07-13 (later)
+- **Best Move Suggestion** shipped on the review page (feature request,
+  outside the numbered milestones): per-move learning card (per-classification
+  copy incl. "you played the engine's best move" / brilliant / blunder
+  punishment), Play Best Move + Play Engine Line with on-board PV playback
+  (pause/step/exit, distinct variation highlight, "Viewing engine variation"
+  banner), 💡 best-move hints in the move list. Zero backend changes — reuses
+  stored `MoveAnalysis` (ADR 007); verified no engine/network work on
+  interaction. Added web vitest setup (`replayLine` + variation-store suites);
+  workspace now at 95 tests.
+
 ### 2026-07-13
 - Delivered Phase 0 (M1–M6): runnable product — signup → import → analyse →
   review → dashboard → share, all verified end-to-end (real Lichess/Chess.com

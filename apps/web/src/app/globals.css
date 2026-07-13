@@ -32,6 +32,7 @@
   --board-light: oklch(0.9 0.025 85);
   --board-dark: oklch(0.62 0.055 270);
   --board-highlight: oklch(0.82 0.14 95 / 55%);
+  --board-variation: oklch(0.72 0.13 200 / 55%);
   --board-check: oklch(0.6 0.2 25 / 60%);
   --board-arrow: oklch(0.54 0.21 288 / 75%);
 
@@ -78,6 +79,7 @@
   --board-light: oklch(0.72 0.03 80);
   --board-dark: oklch(0.42 0.05 275);
   --board-highlight: oklch(0.8 0.14 95 / 45%);
+  --board-variation: oklch(0.75 0.12 200 / 50%);
   --board-check: oklch(0.6 0.2 25 / 65%);
   --board-arrow: oklch(0.72 0.16 288 / 80%);
 

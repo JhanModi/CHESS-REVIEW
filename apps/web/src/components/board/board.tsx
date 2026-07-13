@@ -11,6 +11,8 @@ export interface BoardProps {
   snapshot: BoardSnapshot;
   orientation: "white" | "black";
   lastMove?: { from: number; to: number } | null;
+  /** "variation" recolours the last-move highlight while previewing a line. */
+  highlightVariant?: "game" | "variation";
   checkSquare?: number | null;
   badge?: { square: number; classification: MoveClassification } | null;
   /** Engine suggestion arrow (best move in the shown position). */
@@ -131,11 +133,13 @@ export const Board = memo(function Board({
   snapshot,
   orientation,
   lastMove,
+  highlightVariant = "game",
   checkSquare,
   badge,
   arrow,
   className,
 }: BoardProps) {
+  const highlightColor = highlightVariant === "variation" ? "var(--board-variation)" : "var(--board-highlight)";
   return (
     <div
       className={cn(
@@ -149,8 +153,8 @@ export const Board = memo(function Board({
 
       {lastMove && (
         <>
-          <SquareOverlay square={lastMove.from} orientation={orientation} style={{ background: "var(--board-highlight)" }} />
-          <SquareOverlay square={lastMove.to} orientation={orientation} style={{ background: "var(--board-highlight)" }} />
+          <SquareOverlay square={lastMove.from} orientation={orientation} style={{ background: highlightColor }} />
+          <SquareOverlay square={lastMove.to} orientation={orientation} style={{ background: highlightColor }} />
         </>
       )}
       {checkSquare != null && (
