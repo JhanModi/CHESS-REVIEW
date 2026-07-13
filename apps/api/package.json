@@ -1,0 +1,38 @@
+{
+  "name": "api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "dev": "dotenv -e ../../.env -- nest start --watch",
+    "start": "dotenv -e ../../.env -- node dist/main.js",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clerk/backend": "^3.11.4",
+    "@nestjs/common": "^11.1.28",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.1.28",
+    "@nestjs/platform-express": "^11.1.28",
+    "@nestjs/swagger": "^11.4.5",
+    "@nestjs/throttler": "^6.5.0",
+    "@tempo/chess-core": "workspace:*",
+    "@tempo/db": "workspace:*",
+    "@tempo/engine-core": "workspace:*",
+    "@tempo/types": "workspace:*",
+    "bullmq": "^5.80.2",
+    "ioredis": "^5.10.1",
+    "nanoid": "^5.1.16",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.24",
+    "@tempo/config": "workspace:*",
+    "@types/express": "^5.0.6",
+    "dotenv-cli": "^11.0.0"
+  }
+}
