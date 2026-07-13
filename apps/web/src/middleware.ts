@@ -14,5 +14,9 @@ const middleware = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 export default middleware;
 
 export const config = {
-  matcher: ["/((?!_next|stockfish|pieces|.*\\.(?:svg|png|jpg|ico|css|js|wasm|nnue)$).*)", "/(api|trpc)(.*)"],
+  matcher: [
+    "/((?!_next|stockfish|pieces|.*\\.(?:svg|png|jpg|ico|css|js|wasm|nnue)$).*)",
+    "/(api|trpc)(.*)",
+    "/__clerk/:path*",
+  ],
 };
