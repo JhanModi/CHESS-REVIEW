@@ -34,7 +34,7 @@ function ThemeToggle() {
 
 function SessionBadge() {
   const session = useSessionInfo();
-  if (clerkEnabled) return <UserButton afterSignOutUrl="/" />;
+  if (clerkEnabled) return <UserButton />;
   return (
     <div
       className="flex size-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"

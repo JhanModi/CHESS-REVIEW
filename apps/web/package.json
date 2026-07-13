@@ -22,6 +22,7 @@
     "@tempo/chess-core": "workspace:*",
     "@tempo/engine-core": "workspace:*",
     "@tempo/types": "workspace:*",
+    "chessops": "^0.15.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",

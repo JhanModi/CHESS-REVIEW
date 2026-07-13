@@ -34,7 +34,8 @@ export type AnalysisStatus = (typeof ANALYSIS_STATUSES)[number];
 export const IMPORT_STATUSES = ["QUEUED", "RUNNING", "COMPLETED", "FAILED"] as const;
 export type ImportStatus = (typeof IMPORT_STATUSES)[number];
 
-const uciMove = z.string().regex(/^[a-h][1-8][a-h][1-8][qrbn]?$/, "not a UCI move");
+// "none" marks terminal positions (mate/stalemate) where no move exists.
+const uciMove = z.string().regex(/^([a-h][1-8][a-h][1-8][qrbn]?|none)$/, "not a UCI move");
 
 // ───────────────────────────────────────────────────────── games ────────────
 
