@@ -76,6 +76,16 @@ cost us if forgotten." Never put secret *values* here.
   interrupt and checkmate-terminal handling confirmed.
 - Real imports work keyless: Lichess (`DrNykterstein`), Chess.com (`hikaru`).
 
+## Temporary demo state (2026-07-13)
+
+Root `.env` was pointed at Cloudflare quick-tunnel URLs for a live demo
+(`NEXT_PUBLIC_API_URL` + `WEB_URL` → `*.trycloudflare.com`). Those tunnels are
+ephemeral — once they're gone, **local dev will call a dead API**. To restore
+local dev: set `NEXT_PUBLIC_API_URL="http://localhost:3001"` and
+`WEB_URL="http://localhost:3000"` in `.env`, then restart web + API. (`.env`
+is gitignored, so this never affects the repo.) Tunnels run via
+`scratchpad/cloudflared.exe tunnel --url http://localhost:{3000,3001}`.
+
 ## Data state notes
 
 - Two users exist: the user's real Clerk account (`user_3GSEGET…`, Jhan Modi,
