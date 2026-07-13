@@ -1,0 +1,32 @@
+# Local infrastructure. Optional if you already run Postgres natively —
+# Redis is only needed to exercise the BullMQ queue path (the API falls back
+# to in-process jobs without it).
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: chessreview
+      POSTGRES_PASSWORD: chessreview_dev
+      POSTGRES_DB: chessreview
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chessreview"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

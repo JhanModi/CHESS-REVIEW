@@ -27,6 +27,12 @@ the interactive board.
 
 ## Consequences
 
+- **Licensing**: chessops is GPL-3.0-or-later. Server-side use (the API) does
+  not trigger GPL distribution obligations, but the web bundle shipped to
+  browsers does. Before commercial distribution either comply (publish the
+  bundle's corresponding source) or swap the library at the `@tempo/chess-core`
+  seam — app code never imports chessops directly, so the blast radius is one
+  package.
 - chessops is ESM-only; the API consumes it via Node ≥ 22.12 `require(esm)`
   (see ADR 001).
 - Its API is lower-level than chess.js; `@tempo/chess-core` wraps it behind

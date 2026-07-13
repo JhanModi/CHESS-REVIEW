@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: chessreview
+          POSTGRES_PASSWORD: chessreview_dev
+          POSTGRES_DB: chessreview
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U chessreview"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://chessreview:chessreview_dev@localhost:5432/chessreview
+      SHADOW_DATABASE_URL: postgresql://chessreview:chessreview_dev@localhost:5432/chessreview
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages and apps
+        run: pnpm build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Lint (web)
+        run: pnpm --filter web lint
