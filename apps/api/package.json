@@ -23,6 +23,8 @@
     "@tempo/engine-core": "workspace:*",
     "@tempo/types": "workspace:*",
     "bullmq": "^5.80.2",
+    "compression": "^1.8.1",
+    "helmet": "^8.1.0",
     "ioredis": "^5.10.1",
     "nanoid": "^5.1.16",
     "reflect-metadata": "^0.2.2",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@nestjs/cli": "^11.0.24",
     "@tempo/config": "workspace:*",
+    "@types/compression": "^1.8.1",
     "@types/express": "^5.0.6",
     "dotenv-cli": "^11.0.0"
   }

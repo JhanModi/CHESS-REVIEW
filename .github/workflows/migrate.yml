@@ -1,0 +1,38 @@
+name: DB migrate (production)
+
+# Manual, on-demand production migrations + one-time opening seed, run against
+# Neon without needing your laptop. Render also runs `migrate deploy` on every
+# boot, so this workflow is mainly for seeding and ad-hoc migrations.
+#
+# Setup (once): repo → Settings → Secrets and variables → Actions →
+#   New repository secret → name PROD_DATABASE_URL, value = Neon pooled URL.
+# Run: Actions tab → "DB migrate (production)" → Run workflow → tick "seed" to
+#   also load the 3,803 ECO openings (safe to re-run; idempotent upserts).
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Also seed ECO openings"
+        type: boolean
+        default: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @tempo/db generate
+      - name: Apply migrations
+        run: pnpm --filter @tempo/db run deploy
+      - name: Seed openings
+        if: ${{ inputs.seed }}
+        run: pnpm --filter @tempo/db run seed:ci

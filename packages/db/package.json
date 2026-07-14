@@ -18,6 +18,8 @@
     "migrate:deploy": "dotenv -e ../../.env -- prisma migrate deploy",
     "studio": "dotenv -e ../../.env -- prisma studio",
     "seed": "dotenv -e ../../.env -- tsx src/seed.ts",
+    "deploy": "prisma migrate deploy",
+    "seed:ci": "tsx src/seed.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

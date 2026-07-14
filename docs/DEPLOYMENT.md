@@ -37,11 +37,17 @@ machine.
    `migrate deploy` doesn't use one.)
 
 The API's start command runs `prisma migrate deploy` on boot, so the schema is
-created automatically on first deploy. Seed openings once from your machine
-against Neon:
-```bash
-DATABASE_URL="<neon pooled url>" pnpm --filter @tempo/db exec tsx src/seed.ts
-```
+created automatically on first deploy. **Seed the 3,803 ECO openings once** —
+two ways:
+
+- **No laptop needed (recommended):** add a repo secret `PROD_DATABASE_URL`
+  (the Neon pooled URL) under GitHub → Settings → Secrets → Actions, then run
+  the **DB migrate (production)** workflow (Actions tab) with the *seed* box
+  ticked. See [`.github/workflows/migrate.yml`](../.github/workflows/migrate.yml).
+- **From your machine:**
+  ```bash
+  DATABASE_URL="<neon pooled url>" pnpm --filter @tempo/db run seed:ci
+  ```
 
 ## 2. API — Render
 
@@ -60,7 +66,12 @@ DATABASE_URL="<neon pooled url>" pnpm --filter @tempo/db exec tsx src/seed.ts
 
 Build/start are already defined in the blueprint:
 - build: `pnpm install --frozen-lockfile && pnpm --filter @tempo/db generate && pnpm turbo run build --filter=api`
-- start: `pnpm --filter @tempo/db exec prisma migrate deploy && node apps/api/dist/main.js`
+- start: `pnpm --filter @tempo/db run deploy && node apps/api/dist/main.js`
+
+The API ships production-hardened: `helmet` security headers, `compression`,
+CORS locked to `WEB_URL` (comma-separated to allow Vercel preview origins),
+rate limiting, and a `/v1/health` check. HTTPS is terminated by Render
+automatically. `NODE_ENV=production` and `$PORT` are set by the platform.
 
 ## 3. Web — Vercel
 
@@ -98,13 +109,43 @@ limits) — fine to launch on. For a real production instance:
 2. Add the DNS records Clerk shows (CNAMEs on your domain).
 3. Swap the `pk_live_…` / `sk_live_…` keys into Vercel + Render, redeploy.
 
-## Notes & gotchas
+## 6. Verify (after the loop is closed)
 
-- **Cold starts**: Render free sleeps after ~15 min. First request wakes it
-  (~30–50 s), then it's fast. Upgrade to Starter ($7/mo) for always-on.
-- **Server-side engine (M7)** needs Redis — add Upstash (free tier) and set
-  `REDIS_URL`; the queue/cache switch to BullMQ automatically.
-- **SharedArrayBuffer / threads**: the COOP/COEP headers in `next.config.ts`
-  ship via Vercel, so multithreaded Stockfish works on the deployed site.
+Run through the live site and confirm each item:
+
+| Check | How | Free-tier note |
+|---|---|---|
+| Frontend loads | open the Vercel URL | — |
+| Backend responds | `GET <api>/v1/health` → `{"status":"ok"}` | first hit may cold-start (~30–50 s) |
+| Swagger works | `<api>/docs` renders | — |
+| Clerk login works | sign up on the site | dev instance shows a "development" badge |
+| PGN upload works | paste/upload a PGN | — |
+| Lichess import | import a Lichess username | keyless |
+| Chess.com import | import a Chess.com username | needs `CHESSCOM_USER_AGENT` |
+| Stockfish analysis | run analysis on a game | multithreaded (see below) |
+| Dashboard loads | open the dashboard signed in | — |
+| Public share pages | open `<web>/share/<slug>` logged out | no auth |
+
+## Notes, limits & why
+
+- **"Online 24/7 without your laptop": yes.** Web (Vercel) and API (Render)
+  run in the cloud; the database is on Neon. Nothing depends on your machine.
+- **Render cold starts**: the free API sleeps after ~15 min idle; the next
+  request wakes it (~30–50 s) then it's fast. It stays *available*, just slow
+  on the first hit after a nap. $7/mo removes this if you ever want it.
+- **Multithreaded WASM works.** The COOP/COEP headers in `next.config.ts` ship
+  via Vercel, so the site is cross-origin-isolated and Stockfish uses threads;
+  Safari (no `credentialless`) auto-falls back to the single-thread engine.
+- **Stockfish files**: copied into `public/stockfish/` by the web `prebuild`
+  during the Vercel build and served as immutable static assets (CDN-cached).
 - **Analysis runs in the browser**, so the free API stays light — it only
-  stores games and derives classifications from submitted evals.
+  stores games and derives stats from submitted evals. This is *why* the free
+  Render tier is sufficient.
+- **Redis is optional and left OFF.** With `REDIS_URL` unset the API uses an
+  in-process queue + cache — correct for a single instance. Upstash's free tier
+  is supported (set `REDIS_URL` to its `rediss://` URL), but BullMQ's polling
+  burns Upstash's daily command quota quickly, so in-process is the better free
+  choice until you run multiple API instances.
+- **Custom domain later**: add it in Vercel (web) and update `WEB_URL` on
+  Render + `NEXT_PUBLIC_API_URL` on Vercel; for a Clerk production instance,
+  point its CNAMEs at your domain. No code changes.

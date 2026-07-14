@@ -15,7 +15,7 @@ services:
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @tempo/db generate && pnpm turbo run build --filter=api
     # Apply pending migrations (idempotent) then boot. No dotenv file in prod —
     # env comes from Render; DATABASE_URL is injected below.
-    startCommand: pnpm --filter @tempo/db exec prisma migrate deploy && node apps/api/dist/main.js
+    startCommand: pnpm --filter @tempo/db run deploy && node apps/api/dist/main.js
     healthCheckPath: /v1/health
     envVars:
       - key: NODE_VERSION
@@ -31,6 +31,11 @@ services:
       - key: CLERK_JWT_KEY
         sync: false
       - key: WEB_URL
-        sync: false # the Vercel URL, for CORS
+        sync: false # Vercel origin(s) for CORS — comma-separated to allow previews
       - key: CHESSCOM_USER_AGENT
+        sync: false
+      # OPTIONAL. Leave unset on free tier → in-process queue (recommended:
+      # avoids Upstash's daily command quota, which BullMQ's polling burns
+      # fast). Set to an Upstash rediss:// URL only if you scale to >1 instance.
+      - key: REDIS_URL
         sync: false
