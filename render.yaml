@@ -10,9 +10,12 @@ services:
     runtime: node
     plan: free
     rootDir: .
-    # Build the workspace packages the API depends on, generate the Prisma
-    # client, then compile the API. turbo resolves ^build ordering.
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @tempo/db generate && pnpm turbo run build --filter=api
+    # Install the exact pinned pnpm via npm rather than `corepack enable` —
+    # corepack's bundled signing keys can lag npm's current key rotation,
+    # failing fresh installs with "Cannot find matching keyid". Then build the
+    # workspace packages the API depends on, generate the Prisma client, and
+    # compile the API. turbo resolves ^build ordering.
+    buildCommand: npm install -g pnpm@11.12.0 && pnpm install --frozen-lockfile && pnpm --filter @tempo/db generate && pnpm turbo run build --filter=api
     # Apply pending migrations (idempotent) then boot. No dotenv file in prod —
     # env comes from Render; DATABASE_URL is injected below.
     startCommand: pnpm --filter @tempo/db run deploy && node apps/api/dist/main.js

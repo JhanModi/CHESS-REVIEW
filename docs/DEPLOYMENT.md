@@ -64,6 +64,12 @@ two ways:
 3. Deploy. Health check: `https://tempo-api-xxxx.onrender.com/v1/health` → `{"status":"ok"}`.
    Swagger at `/docs`.
 
+> **If the build fails with `Error: Cannot find matching keyid` from
+> corepack**: that's corepack's own signature verification against a stale
+> key set, unrelated to this repo. The blueprint installs pnpm via `npm`
+> instead of `corepack enable` specifically to avoid it — if you're seeing
+> this, pull the latest `render.yaml` and redeploy.
+
 Build/start are already defined in the blueprint:
 - build: `pnpm install --frozen-lockfile && pnpm --filter @tempo/db generate && pnpm turbo run build --filter=api`
 - start: `pnpm --filter @tempo/db run deploy && node apps/api/dist/main.js`
