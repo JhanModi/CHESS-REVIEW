@@ -82,23 +82,23 @@ automatically. `NODE_ENV=production` and `$PORT` are set by the platform.
 ## 3. Web — Vercel
 
 1. Sign up at vercel.com → **Add New → Project** → import the GitHub repo.
-2. Leave **Root Directory** at the repo root. `vercel.json` already sets the
-   framework, install, build (`turbo run build --filter=web`, which builds the
-   `@tempo/*` packages first and copies the Stockfish engine via the web
-   `prebuild` hook) and output directory.
-3. Add environment variables (Production):
+2. Set **Root Directory = `apps/web`** (via **Edit**). This is required —
+   Vercel detects Next.js by looking for `next` in the package.json at the
+   Root Directory, which only exists in `apps/web`, not the monorepo root.
+   [`apps/web/vercel.json`](../apps/web/vercel.json) then builds the whole
+   workspace from the repo root (`cd ../.. && pnpm turbo run build --filter=web`,
+   which compiles the `@tempo/*` packages first and copies the Stockfish engine
+   via the web `prebuild` hook). Keep "Include files outside the Root Directory"
+   enabled (default for monorepos) so the `cd ../..` can reach the workspace.
+3. Add environment variables (Production **and** Preview):
    - `NEXT_PUBLIC_API_URL` → your Render API URL (e.g.
      `https://tempo-api-xxxx.onrender.com`). **Build-time** — a redeploy is
      needed if you change it.
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` → Clerk → API keys
-   - `CLERK_SECRET_KEY` → Clerk (used by Next middleware)
-   - The `NEXT_PUBLIC_CLERK_SIGN_IN_URL` / `_SIGN_UP_URL` /
-     `_FALLBACK_REDIRECT_URL` values from `apps/web/.env.local`.
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` (Next
+     middleware), plus the four `NEXT_PUBLIC_CLERK_*_URL` values. Fastest:
+     **Import .env** → `apps/web/.env.local`, then add `NEXT_PUBLIC_API_URL`
+     manually (it isn't in that file).
 4. Deploy → note the URL (e.g. `https://tempo.vercel.app`).
-
-> If Vercel fails to detect Next.js from the repo root, set **Root Directory =
-> `apps/web`** and override **Build Command = `cd ../.. && pnpm turbo run build
-> --filter=web`** instead — same result, dashboard-driven.
 
 ## 4. Close the loop
 
