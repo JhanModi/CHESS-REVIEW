@@ -52,8 +52,8 @@ docs/           architecture · API · database · ADRs 001–007
 
 ## Getting started
 
-Prerequisites: **Node ≥ 22.12**, **pnpm ≥ 9**, **PostgreSQL 16+** (native or
-`docker compose up -d`). Redis is optional in dev.
+Prerequisites: **Node ≥ 22.13** (pnpm 11's own floor), **pnpm ≥ 9**,
+**PostgreSQL 16+** (native or `docker compose up -d`). Redis is optional in dev.
 
 ```bash
 pnpm install

@@ -21,8 +21,9 @@ services:
     startCommand: pnpm --filter @tempo/db run deploy && node apps/api/dist/main.js
     healthCheckPath: /v1/health
     envVars:
+      # pnpm@11.12.0 requires Node >=22.13 — keep this at or above that floor.
       - key: NODE_VERSION
-        value: "22.12.0"
+        value: "22.19.0"
       - key: NODE_ENV
         value: production
       # Render injects $PORT automatically; the API reads it (see main.ts).
