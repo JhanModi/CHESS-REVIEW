@@ -47,7 +47,16 @@ describe("parseGames", () => {
     expect(sans).toContain("exd6"); // en passant
     expect(sans).toContain("cxb8=Q"); // promotion
     expect(game.moves.find((m) => m.san === "cxb8=Q")!.uci).toBe("c7b8q");
-    expect(game.moves.find((m) => m.san === "O-O" && m.ply === 15)!.uci).toMatch(/^e1[gh]1$/);
+    // Standard UCI (king's actual destination), NOT chessops' king-onto-rook.
+    expect(game.moves.find((m) => m.san === "O-O" && m.ply === 14)!.uci).toBe("e8g8"); // black kingside
+    expect(game.moves.find((m) => m.san === "O-O" && m.ply === 15)!.uci).toBe("e1g1"); // white kingside
+  });
+
+  it("emits standard UCI for queenside castling (not the rook square)", () => {
+    // White O-O-O: king e1→c1, NOT e1a1.
+    const white = parseGame(`1. d4 d5 2. Nc3 Nc6 3. Bf4 Bf5 4. Qd2 Qd7 5. O-O-O O-O-O *`);
+    expect(white.moves.find((m) => m.san === "O-O-O" && m.ply === 9)!.uci).toBe("e1c1");
+    expect(white.moves.find((m) => m.san === "O-O-O" && m.ply === 10)!.uci).toBe("e8c8"); // black queenside
   });
 
   it("splits multi-game files", () => {

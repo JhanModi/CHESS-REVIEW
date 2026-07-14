@@ -85,28 +85,31 @@ export function buildSnapshots(initialFen: string, uciMoves: readonly string[]):
       continue;
     }
 
-    // En passant: pawn moves diagonally onto an empty square.
-    const targetIndex = next.findIndex((p) => p.square === to && p.id !== mover.id);
-    if (targetIndex >= 0) {
-      next.splice(targetIndex, 1);
-    } else if (mover.role === "p" && fileOf(from) !== fileOf(to)) {
-      const capturedSquare = squareOf(fileOf(to), rankOf(from));
-      const epIndex = next.findIndex((p) => p.square === capturedSquare && p.color !== mover.color);
-      if (epIndex >= 0) next.splice(epIndex, 1);
-    }
+    // Castling, handling BOTH UCI encodings: standard (king moves two files,
+    // e1g1/e1c1) and chessops' king-onto-own-rook (e1h1/e1a1). Handle it
+    // before the capture logic so the friendly rook is never seen as captured.
+    const rookAtTarget = next.some((p) => p.square === to && p.role === "r" && p.color === mover.color);
+    const isCastle = mover.role === "k" && (Math.abs(fileOf(to) - fileOf(from)) === 2 || rookAtTarget);
 
-    // Castling: king moves two files → hop the rook too.
-    if (mover.role === "k" && Math.abs(fileOf(to) - fileOf(from)) === 2) {
+    if (isCastle) {
       const kingside = fileOf(to) > fileOf(from);
-      const rookFrom = squareOf(kingside ? 7 : 0, rankOf(from));
-      const rookTo = squareOf(kingside ? 5 : 3, rankOf(from));
-      const rook = next.find((p) => p.square === rookFrom && p.role === "r" && p.color === mover.color);
-      if (rook) rook.square = rookTo;
+      const rank = rankOf(from);
+      const rook = next.find((p) => p.square === squareOf(kingside ? 7 : 0, rank) && p.role === "r" && p.color === mover.color);
+      if (rook) rook.square = squareOf(kingside ? 5 : 3, rank);
+      mover.square = squareOf(kingside ? 6 : 2, rank);
+    } else {
+      // Capture (incl. en passant: pawn moves diagonally onto an empty square).
+      const targetIndex = next.findIndex((p) => p.square === to && p.id !== mover.id);
+      if (targetIndex >= 0) {
+        next.splice(targetIndex, 1);
+      } else if (mover.role === "p" && fileOf(from) !== fileOf(to)) {
+        const capturedSquare = squareOf(fileOf(to), rankOf(from));
+        const epIndex = next.findIndex((p) => p.square === capturedSquare && p.color !== mover.color);
+        if (epIndex >= 0) next.splice(epIndex, 1);
+      }
+      mover.square = to;
+      if (promotion) mover.role = promotion;
     }
-
-    const moved = next.find((p) => p.id === mover.id)!;
-    moved.square = to;
-    if (promotion) moved.role = promotion;
 
     snapshots.push(next);
     current = next;

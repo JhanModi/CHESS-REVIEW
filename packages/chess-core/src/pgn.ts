@@ -1,8 +1,29 @@
+import type { Position } from "chessops/chess";
 import { makeFen } from "chessops/fen";
 import { parseComment, parsePgn, startingPosition } from "chessops/pgn";
 import { parseSan } from "chessops/san";
-import { makeUci } from "chessops/util";
+import type { Move } from "chessops/types";
+import { makeSquare, makeUci, squareFile, squareRank } from "chessops/util";
 import type { ParsedGame, ParsedMove, PgnResult } from "./types.js";
+
+/**
+ * chessops encodes castling as the king moving onto its own rook's square
+ * (e1a1 / e1h1). Convert those to standard UCI (e1c1 / e1g1) so the played
+ * move matches the engine's own-UCI convention (important for classification)
+ * and renders correctly on the board. Must be called BEFORE `pos.play(move)`.
+ */
+function toStandardUci(pos: Position, move: Move): string {
+  if ("from" in move) {
+    const piece = pos.board.get(move.from);
+    const target = pos.board.get(move.to);
+    if (piece?.role === "king" && target?.role === "rook" && target.color === piece.color) {
+      const kingside = squareFile(move.to) > squareFile(move.from);
+      const kingTo = squareRank(move.from) * 8 + (kingside ? 6 : 2);
+      return makeSquare(move.from) + makeSquare(kingTo);
+    }
+  }
+  return makeUci(move);
+}
 
 export class PgnParseError extends Error {
   constructor(
@@ -71,11 +92,12 @@ export function parseGames(pgnText: string): ParsedGame[] {
         if (parsed.clock !== undefined) clockSeconds = Math.round(parsed.clock);
       }
 
+      const uci = toStandardUci(pos, move);
       pos.play(move);
       moves.push({
         ply,
         san: node.san,
-        uci: makeUci(move),
+        uci,
         fenBefore,
         fenAfter: makeFen(pos.toSetup()),
         epdBefore,
