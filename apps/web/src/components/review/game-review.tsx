@@ -93,7 +93,13 @@ export function GameReview({ game, readOnly = false }: { game: GameDetailDto; re
       currentMove && currentAnalysis
         ? { square: uciEnds(currentMove.uci).to, classification: currentAnalysis.classification }
         : null;
-    arrow = nextAnalysis && nextAnalysis.bestMoveUci.length >= 4 ? uciEnds(nextAnalysis.bestMoveUci) : null;
+    // Show the best move for the move that was just played (retrospective):
+    // the engine's best move in the position *before* the current move — i.e.
+    // "what the mover should have played" — rather than the opponent's reply.
+    arrow =
+      currentAnalysis && currentAnalysis.bestMoveUci.length >= 4 && currentAnalysis.bestMoveUci !== "none"
+        ? uciEnds(currentAnalysis.bestMoveUci)
+        : null;
   }
 
   // Eval bar: during a preview, hold the studied move's best-play eval —
