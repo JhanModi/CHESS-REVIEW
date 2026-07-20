@@ -38,7 +38,7 @@ analysis platforms, not a clone of any.
 
 ### Shipped (v0 — foundational product)
 - Import: PGN paste, drag-and-drop upload (multi-game), Lichess + Chess.com
-  username sync (keyless, background jobs, progress).
+  username sync (keyless, background jobs, progress; 10 most recent games).
 - In-browser Stockfish 18 analysis (multithreaded + single-thread fallback),
   MultiPV 2, resumable, EPD-deduplicated.
 - Classification: brilliant, great, best, excellent, good, book, inaccuracy,

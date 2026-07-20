@@ -66,7 +66,7 @@ export const importRequestSchema = z.object({
     .max(40)
     .regex(/^[\w.-]+$/, "invalid username"),
   /** Most-recent games to fetch. */
-  max: z.coerce.number().int().min(1).max(200).default(50),
+  max: z.coerce.number().int().min(1).max(200).default(10),
 });
 export type ImportRequest = z.infer<typeof importRequestSchema>;
 

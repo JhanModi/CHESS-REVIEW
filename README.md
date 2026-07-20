@@ -13,7 +13,8 @@ dashboards — with original UI, branding and implementation.
 ## What works today
 
 - **Import**: PGN paste, drag-and-drop upload (multi-game), Lichess and
-  Chess.com username sync (keyless public APIs, background jobs, progress UI)
+  Chess.com username sync (keyless public APIs, background jobs, progress UI —
+  fetches your 10 most recent games)
 - **Analysis**: Stockfish 18 lite (WASM, multithreaded when the browser allows,
   single-thread fallback) evaluates every position at MultiPV 2; raw evals
   stream to the server, which derives win% (lichess model), per-move accuracy,

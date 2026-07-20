@@ -72,7 +72,7 @@ export class ImportsService implements OnModuleInit {
     await this.prisma.importJob.update({ where: { id: jobId }, data: { status: "RUNNING" } });
 
     try {
-      const max = Math.min(Number(job.cursor) || 50, 200);
+      const max = Math.min(Number(job.cursor) || 10, 200);
       const client = job.source === "LICHESS" ? this.lichess : this.chesscom;
       const fetched = await client.fetchRecentGames(job.username, max);
       await this.prisma.importJob.update({

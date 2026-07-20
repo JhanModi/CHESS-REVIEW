@@ -29,8 +29,8 @@ Base URL: `http://localhost:3001` (dev). All endpoints are versioned under
 | POST | `/v1/games/:id/share` | create/return public share slug |
 | DELETE | `/v1/games/:id/share` | revoke share slug |
 | GET | `/v1/share/:slug` | shared game (public) |
-| POST | `/v1/imports/lichess` | queue Lichess username import `{ username, max }` |
-| POST | `/v1/imports/chesscom` | queue Chess.com username import |
+| POST | `/v1/imports/lichess` | queue Lichess username import `{ username, max? }` (`max` defaults to 10, capped at 200) |
+| POST | `/v1/imports/chesscom` | queue Chess.com username import `{ username, max? }` (`max` defaults to 10, capped at 200) |
 | GET | `/v1/imports` | recent import jobs |
 | GET | `/v1/imports/:id` | job progress (poll) |
 | PUT | `/v1/games/:id/analysis` | submit raw position evals (incremental batches) |

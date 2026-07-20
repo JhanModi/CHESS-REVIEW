@@ -133,7 +133,7 @@ function PlatformSyncCard({
 
   const start = useMutation({
     mutationFn: () =>
-      api<ImportJobDto>(`/imports/${platform}`, { method: "POST", body: { username: username.trim(), max: 50 } }),
+      api<ImportJobDto>(`/imports/${platform}`, { method: "POST", body: { username: username.trim(), max: 10 } }),
     onSuccess: (created) => setJobId(created.id),
     onError: (error: Error) => toast.error(error.message),
   });
@@ -204,12 +204,12 @@ export default function ImportPage() {
           <PlatformSyncCard
             platform="lichess"
             title="Lichess"
-            description="Fetches your 50 most recent standard games (no account linking needed)."
+            description="Fetches your 10 most recent standard games (no account linking needed)."
           />
           <PlatformSyncCard
             platform="chesscom"
             title="Chess.com"
-            description="Fetches your 50 most recent games from the monthly archives."
+            description="Fetches your 10 most recent games from the monthly archives."
           />
         </div>
       </div>
