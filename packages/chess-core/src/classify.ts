@@ -25,7 +25,10 @@ export function classifyMove(
   const cpLoss = Math.max(0, povCp(scoreToCp(ctx.evalBefore), color) - povCp(scoreToCp(ctx.evalAfter), color));
   const accuracy = moveAccuracy(winBefore, winAfter);
 
-  const isBestMove = ctx.uci === ctx.bestMoveUci || winAfter >= winBefore;
+  // "Best" clusters near-ties: the engine's #1, or any move within a small
+  // win% of it (which subsumes "held or improved the eval" → loss 0). Moves
+  // just outside the cluster fall through to excellent/good.
+  const isBestMove = ctx.uci === ctx.bestMoveUci || loss <= thresholds.bestMaxLoss;
 
   const hadMate = ctx.evalBefore.mate !== undefined && povCp(scoreToCp(ctx.evalBefore), color) > 0;
   const keptMate = ctx.evalAfter.mate !== undefined && povCp(scoreToCp(ctx.evalAfter), color) > 0;

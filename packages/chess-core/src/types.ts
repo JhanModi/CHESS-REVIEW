@@ -53,6 +53,12 @@ export type MoveLabel =
   | "forced";
 
 export interface ClassificationThresholds {
+  /**
+   * Win%-loss at/below which a move that isn't the engine's #1 still clusters
+   * as "best". Chess rarely has a single best move — near-ties (a few cp apart)
+   * should share the top bucket rather than being split into best vs excellent.
+   */
+  bestMaxLoss: number;
   /** Win%-loss below which a non-best move is still "excellent". */
   excellent: number;
   /** Win%-loss bands. */
@@ -72,6 +78,7 @@ export interface ClassificationThresholds {
 }
 
 export const DEFAULT_THRESHOLDS: ClassificationThresholds = {
+  bestMaxLoss: 1,
   excellent: 2,
   inaccuracy: 10,
   mistake: 20,

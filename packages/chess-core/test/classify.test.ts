@@ -67,11 +67,19 @@ describe("classifyMove — label matrix", () => {
     ).toBe("best");
   });
 
-  it("win% bands: excellent / good / inaccuracy / mistake / blunder", () => {
+  it("a non-#1 move within the best cluster is still best", () => {
+    // a2a3 isn't the engine's e2e4, but it's only ~0.5 win% worse — a near-tie.
+    expect(
+      classifyMove(ctx({ uci: "a2a3", bestMoveUci: "e2e4", evalBefore: { cp: 30 }, evalAfter: { cp: 25 } })).label,
+    ).toBe("best");
+  });
+
+  it("win% bands: best-cluster / excellent / good / inaccuracy / mistake / blunder", () => {
     const at = (cpBefore: number, cpAfter: number) =>
       classifyMove(ctx({ uci: "a2a3", bestMoveUci: "e2e4", evalBefore: { cp: cpBefore }, evalAfter: { cp: cpAfter } })).label;
-    expect(at(30, 25)).toBe("excellent"); // ~0.4 win% loss
-    expect(at(30, -30)).toBe("good"); // ~2.2 win% loss
+    expect(at(30, 25)).toBe("best"); // ~0.5 win% loss — inside the best cluster
+    expect(at(0, -16)).toBe("excellent"); // ~1.5 win% loss — just outside the cluster
+    expect(at(30, -30)).toBe("good"); // ~5.5 win% loss
     expect(at(200, 50)).toBe("inaccuracy"); // ~10.5 win% loss
     expect(at(300, 0)).toBe("mistake"); // ~21 win% loss
     expect(at(300, -300)).toBe("blunder"); // ~42 win% loss
@@ -125,7 +133,7 @@ describe("classifyMove — custom thresholds", () => {
     const lenient = classifyMove(
       ctx({ uci: "a2a3", bestMoveUci: "e2e4", evalBefore: { cp: 300 }, evalAfter: { cp: 0 } }),
       {
-        excellent: 2, inaccuracy: 30, mistake: 45, blunder: 60, greatGap: 20,
+        bestMaxLoss: 1, excellent: 2, inaccuracy: 30, mistake: 45, blunder: 60, greatGap: 20,
         brilliantMaxLoss: 2, brilliantMinWinAfter: 40, brilliantMaxWinBefore: 97,
         missWinBefore: 101, missMinLoss: 10, missWinAfterFloor: 40,
       },

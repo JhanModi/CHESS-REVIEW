@@ -185,6 +185,7 @@ export function GameReview({ game, readOnly = false }: { game: GameDetailDto; re
                   move={currentMove}
                   moveAnalysis={currentAnalysis}
                   fenBefore={currentFen({ game, currentPly: currentPly - 1 })}
+                  openingName={game.openingName}
                 />
               )}
               <MoveList

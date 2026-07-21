@@ -112,6 +112,7 @@ export const evalCacheQuerySchema = z.object({
 // ───────────────────────────────────────────────────────── settings ─────────
 
 export const thresholdSettingsSchema = z.object({
+  bestMaxLoss: z.number().min(0).max(100),
   excellent: z.number().min(0).max(100),
   inaccuracy: z.number().min(0).max(100),
   mistake: z.number().min(0).max(100),
