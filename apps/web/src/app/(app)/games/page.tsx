@@ -1,13 +1,23 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { Download, Swords } from "lucide-react";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Download, Swords, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 import type { GameListItemDto, PagedDto } from "@tempo/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApi } from "@/lib/use-api";
 import { cn } from "@/lib/utils";
@@ -32,6 +42,61 @@ function resultTone(game: GameListItemDto): string {
   if (game.result === "DRAW") return "text-muted-foreground";
   const won = (game.result === "WHITE_WIN") === (game.userColor === "WHITE");
   return won ? "text-[var(--cls-best)]" : "text-[var(--cls-blunder)]";
+}
+
+/** Per-game delete: a confirmation dialog so imported/other-players' games can
+ *  be removed without polluting personal stats. */
+function DeleteGameButton({ game }: { game: GameListItemDto }) {
+  const api = useApi();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const del = useMutation({
+    mutationFn: () => api(`/games/${game.id}`, { method: "DELETE" }),
+    onSuccess: async () => {
+      setOpen(false);
+      toast.success("Game deleted");
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["games"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+      ]);
+    },
+    onError: () => toast.error("Could not delete the game"),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Delete game"
+          className="shrink-0 text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete this game?</DialogTitle>
+          <DialogDescription>
+            <span className="font-medium text-foreground">
+              {game.whiteName} vs {game.blackName}
+            </span>{" "}
+            and its analysis will be permanently removed from your account. This cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end gap-2">
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button variant="destructive" onClick={() => del.mutate()} disabled={del.isPending}>
+            {del.isPending ? "Deleting…" : "Delete game"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export default function GamesPage() {
@@ -97,34 +162,39 @@ export default function GamesPage() {
       ) : (
         <div className="space-y-2">
           {games.map((game) => (
-            <Link
+            <div
               key={game.id}
-              href={`/games/${game.id}`}
-              className="flex items-center gap-4 rounded-lg border bg-card px-4 py-3 transition-colors hover:bg-accent/50"
+              className="flex items-center gap-2 rounded-lg border bg-card pr-2 transition-colors hover:bg-accent/50"
             >
-              <span className={cn("w-8 text-center font-mono text-sm font-bold", resultTone(game))}>
-                {RESULT_LABEL[game.result]}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">
-                  {game.whiteName} vs {game.blackName}
+              <Link
+                href={`/games/${game.id}`}
+                className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3"
+              >
+                <span className={cn("w-8 text-center font-mono text-sm font-bold", resultTone(game))}>
+                  {RESULT_LABEL[game.result]}
                 </span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {game.openingName ?? "Unknown opening"}
-                  {game.playedAt ? ` · ${new Date(game.playedAt).toLocaleDateString()}` : ""}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">
+                    {game.whiteName} vs {game.blackName}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {game.openingName ?? "Unknown opening"}
+                    {game.playedAt ? ` · ${new Date(game.playedAt).toLocaleDateString()}` : ""}
+                  </span>
                 </span>
-              </span>
-              {game.userAccuracy !== null && (
-                <span className="text-sm font-semibold tabular-nums">{game.userAccuracy.toFixed(1)}%</span>
-              )}
-              {game.analysisStatus === "COMPLETE" ? (
-                <Badge variant="secondary">analysed</Badge>
-              ) : (
-                <Badge variant="outline" className="text-muted-foreground">
-                  new
-                </Badge>
-              )}
-            </Link>
+                {game.userAccuracy !== null && (
+                  <span className="text-sm font-semibold tabular-nums">{game.userAccuracy.toFixed(1)}%</span>
+                )}
+                {game.analysisStatus === "COMPLETE" ? (
+                  <Badge variant="secondary">analysed</Badge>
+                ) : (
+                  <Badge variant="outline" className="text-muted-foreground">
+                    new
+                  </Badge>
+                )}
+              </Link>
+              <DeleteGameButton game={game} />
+            </div>
           ))}
           {query.hasNextPage && (
             <div className="flex justify-center pt-2">

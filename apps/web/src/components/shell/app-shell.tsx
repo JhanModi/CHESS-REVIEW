@@ -6,10 +6,9 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
 import { TempoLogo } from "@/components/logo";
+import { AccountMenu } from "@/components/shell/account-menu";
 import { Button } from "@/components/ui/button";
-import { clerkEnabled, useSessionInfo } from "@/lib/auth";
 import { cn } from "@/lib/utils";
-import { UserButton } from "@clerk/nextjs";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
@@ -29,19 +28,6 @@ function ThemeToggle() {
       <Sun className="hidden dark:block" />
       <Moon className="dark:hidden" />
     </Button>
-  );
-}
-
-function SessionBadge() {
-  const session = useSessionInfo();
-  if (clerkEnabled) return <UserButton />;
-  return (
-    <div
-      className="flex size-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
-      title={`${session.displayName} (local dev)`}
-    >
-      {session.displayName.slice(0, 1)}
-    </div>
   );
 }
 
@@ -90,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <nav className="hidden gap-1 md:flex" aria-hidden />
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
-            <SessionBadge />
+            <AccountMenu />
           </div>
         </header>
         <main className="min-w-0 flex-1 px-4 py-6 md:px-6">{children}</main>

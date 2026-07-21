@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
   createGamesSchema,
   listGamesQuerySchema,
+  type ClearGamesResultDto,
   type CreateGamesRequest,
   type ListGamesQuery,
 } from "@tempo/types";
@@ -32,6 +33,12 @@ export class GamesController {
     @Query(new ZodValidationPipe(listGamesQuerySchema)) query: ListGamesQuery,
   ) {
     return this.games.list(user.id, query);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: "Delete ALL of the user's games and their analysis" })
+  clearAll(@CurrentUser() user: RequestUser): Promise<ClearGamesResultDto> {
+    return this.games.deleteAll(user.id);
   }
 
   @Get(":id")

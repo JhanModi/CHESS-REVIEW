@@ -231,6 +231,16 @@ export class GamesService {
     await this.prisma.game.delete({ where: { id: gameId } });
   }
 
+  /**
+   * Deletes every game owned by the user (and, via cascade, their moves and
+   * analysis). Scoped strictly to `userId`, so one account can never clear
+   * another's data. Returns how many games were removed.
+   */
+  async deleteAll(userId: string): Promise<{ deleted: number }> {
+    const { count } = await this.prisma.game.deleteMany({ where: { userId } });
+    return { deleted: count };
+  }
+
   async share(userId: string, gameId: string): Promise<{ shareSlug: string }> {
     const game = await this.prisma.game.findFirst({ where: { id: gameId, userId }, select: { id: true, shareSlug: true } });
     if (!game) throw new NotFoundException("Game not found");

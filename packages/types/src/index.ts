@@ -244,3 +244,8 @@ export interface PagedDto<T> {
   items: T[];
   nextCursor: string | null;
 }
+
+/** Result of clearing all of a user's games (DELETE /v1/games). */
+export interface ClearGamesResultDto {
+  deleted: number;
+}
