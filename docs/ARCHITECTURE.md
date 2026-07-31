@@ -132,7 +132,7 @@ extracted features, personalised weekly training plans. Progress tracking v1
 
 ## 10. Development requirements
 
-No placeholder code; TDD in the pure-logic packages (94 tests across
+No placeholder code; TDD in the pure-logic packages (79 tests across
 chess-core/engine-core); ADRs for every structural decision; clean
 architecture (framework-free domain, thin app layer); repo-wide typecheck must
 pass; CI runs lint + typecheck + tests + builds on every push.

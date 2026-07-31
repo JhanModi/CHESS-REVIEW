@@ -23,12 +23,13 @@ All formulas live in `@tempo/chess-core` as pure functions with golden tests.
    std-dev of win%, window 2–8 plies, clamped 0.5–12) and (b) harmonic mean of
    move accuracies.
 4. **Threshold bands** on win% loss (defaults, user-configurable):
-   Inaccuracy ≥ 10, Mistake ≥ 20, Blunder ≥ 30.
+   best cluster ≤ 1, Inaccuracy ≥ 10, Mistake ≥ 20, Blunder ≥ 30.
 5. **Label precedence** (first match wins):
    `Book` (position in ECO table) → `Forced` (single legal move) →
    `Brilliant` (best/near-best + sound material sacrifice + not losing after) →
    `Great` (only good move by MultiPV-2 gap, or converts a lost/drawn eval) →
-   `Best` (matches engine PV1) → `Miss` (opponent-gifted win/mate not taken) →
+   `Best` (engine PV1, or a near-tie clustered within ~1 win% of it) →
+   `Miss` (opponent-gifted win/mate not taken) →
    threshold band → `Excellent` / `Good` by remaining win% loss.
 6. Analysis runs with **MultiPV = 2** so only-move detection and Miss detection
    have the second-best line available.

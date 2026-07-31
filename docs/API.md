@@ -26,6 +26,7 @@ Base URL: `http://localhost:3001` (dev). All endpoints are versioned under
 | GET | `/v1/games` | list, filters: `source`, `result`, `analysed`, cursor pagination |
 | GET | `/v1/games/:id` | full detail: moves, analysis, opening |
 | DELETE | `/v1/games/:id` | delete game + analysis |
+| DELETE | `/v1/games` | delete ALL of the user's games + analysis (clear account data); returns `{ deleted }` |
 | POST | `/v1/games/:id/share` | create/return public share slug |
 | DELETE | `/v1/games/:id/share` | revoke share slug |
 | GET | `/v1/share/:slug` | shared game (public) |
