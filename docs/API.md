@@ -34,9 +34,9 @@ Base URL: `http://localhost:3001` (dev). All endpoints are versioned under
 | POST | `/v1/imports/chesscom` | queue Chess.com username import `{ username, max? }` (`max` defaults to 10, capped at 200) |
 | GET | `/v1/imports` | recent import jobs |
 | GET | `/v1/imports/:id` | job progress (poll) |
-| PUT | `/v1/games/:id/analysis` | submit raw position evals (incremental batches) |
+| PUT | `/v1/games/:id/analysis` | submit raw position evals (incremental batches; stored per-user, ADR 008) |
 | GET | `/v1/games/:id/analysis` | current analysis state |
-| GET | `/v1/evals?epds=a,b,c` | shared eval-cache lookup (≤ 200 EPDs) |
+| GET | `/v1/evals?epds=a,b,c` | eval-cache lookup (≤ 200 EPDs): your own evals + trusted server evals, deeper wins (ADR 008) |
 | GET | `/v1/stats/dashboard` | dashboard aggregates |
 
 ## The analysis contract (ADR 007)

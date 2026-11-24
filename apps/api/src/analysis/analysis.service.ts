@@ -16,6 +16,7 @@ import type { Prisma } from "@tempo/db";
 import type { AnalysisDto, EvalCacheEntryDto, SubmitAnalysisRequest } from "@tempo/types";
 import { toAnalysisDto } from "../games/games.serializer.js";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { mergeEvalSources } from "./eval-sources.js";
 
 interface CachedLine {
   moveUci: string;
@@ -34,9 +35,10 @@ export class AnalysisService {
 
   /**
    * Accepts a batch of raw position evaluations from the client, stores them
-   * in the shared EPD cache, then re-derives every derivable per-move record
-   * server-side (ADR 007). Batches may arrive incrementally and out of order;
-   * lastPly tracks the contiguous frontier for resume.
+   * in the submitting user's own eval store (ADR 008 — client evals are
+   * untrusted and never shared across users), then re-derives every derivable
+   * per-move record server-side (ADR 007). Batches may arrive incrementally
+   * and out of order; lastPly tracks the contiguous frontier for resume.
    */
   async submit(userId: string, gameId: string, dto: SubmitAnalysisRequest): Promise<AnalysisDto> {
     const game = await this.prisma.game.findFirst({
@@ -62,7 +64,8 @@ export class AnalysisService {
       update: { engineId: dto.engineId, targetDepth: dto.targetDepth },
     });
 
-    // Write-through to the shared position cache, depth-monotonically.
+    // Write-through to the user's own eval store, depth-monotonically. Never
+    // to the shared EngineEvaluation cache, which holds server evals only.
     for (const position of dto.positions) {
       const epd = epdForIndex(position.index);
       const best = position.lines[0]!;
@@ -76,16 +79,31 @@ export class AnalysisService {
         multiPv: position.lines as unknown as Prisma.InputJsonValue,
         nodes: position.nodes !== undefined ? BigInt(position.nodes) : null,
       };
-      const existing = await this.prisma.engineEvaluation.findUnique({ where: { epd }, select: { depth: true } });
+      const key = { userId_epd: { userId, epd } };
+      const existing = await this.prisma.clientEvaluation.findUnique({ where: key, select: { depth: true } });
       if (!existing) {
-        await this.prisma.engineEvaluation.create({ data: { epd, ...data } });
+        await this.prisma.clientEvaluation.create({ data: { userId, epd, ...data } });
       } else if (existing.depth < position.depth) {
-        await this.prisma.engineEvaluation.update({ where: { epd }, data });
+        await this.prisma.clientEvaluation.update({ where: key, data });
       }
     }
 
-    await this.deriveMoves(gameId, parsed, this.thresholds(game.user.settings));
+    await this.deriveMoves(userId, gameId, parsed, this.thresholds(game.user.settings));
     return this.get(userId, gameId);
+  }
+
+  /**
+   * The evaluations a user may rely on (ADR 008): their own client-submitted
+   * rows plus trusted server rows, deeper winning. Other users' client rows
+   * are never visible.
+   */
+  private async loadEvals(userId: string, epds: readonly string[]) {
+    const unique = [...new Set(epds)];
+    const [own, trusted] = await Promise.all([
+      this.prisma.clientEvaluation.findMany({ where: { userId, epd: { in: unique } } }),
+      this.prisma.engineEvaluation.findMany({ where: { epd: { in: unique } } }),
+    ]);
+    return mergeEvalSources(userId, own, trusted);
   }
 
   private thresholds(settings: unknown): ClassificationThresholds {
@@ -96,14 +114,16 @@ export class AnalysisService {
     return { ...DEFAULT_THRESHOLDS, ...overrides };
   }
 
-  /** Re-derives MoveAnalysis rows from whatever positions the cache holds. */
-  private async deriveMoves(gameId: string, parsed: ParsedGame, thresholds: ClassificationThresholds): Promise<void> {
+  /** Re-derives MoveAnalysis rows from the evaluations this user may rely on. */
+  private async deriveMoves(
+    userId: string,
+    gameId: string,
+    parsed: ParsedGame,
+    thresholds: ClassificationThresholds,
+  ): Promise<void> {
     const totalPlies = parsed.moves.length;
     const epds = [epdFromFen(parsed.initialFen), ...parsed.moves.map((m) => m.epdAfter)];
-    const cacheRows = await this.prisma.engineEvaluation.findMany({
-      where: { epd: { in: [...new Set(epds)] } },
-    });
-    const cache = new Map(cacheRows.map((row) => [row.epd, row]));
+    const cache = await this.loadEvals(userId, epds);
 
     const analysis = await this.prisma.analysis.findUnique({ where: { gameId } });
     if (!analysis) return;
@@ -197,11 +217,12 @@ export class AnalysisService {
     return toAnalysisDto(analysis);
   }
 
-  /** Shared eval-cache lookup so clients can skip already-known positions. */
-  async lookup(epds: string[]): Promise<EvalCacheEntryDto[]> {
-    const rows = await this.prisma.engineEvaluation.findMany({
-      where: { epd: { in: epds.slice(0, 200) } },
-    });
+  /**
+   * Eval-cache lookup so clients can skip already-known positions. Returns
+   * only the caller's own evals and trusted server evals (ADR 008).
+   */
+  async lookup(userId: string, epds: string[]): Promise<EvalCacheEntryDto[]> {
+    const rows = [...(await this.loadEvals(userId, epds.slice(0, 200))).values()];
     return rows.map((row) => ({
       epd: row.epd,
       engineId: row.engineId,

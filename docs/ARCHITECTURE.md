@@ -48,10 +48,12 @@ transport-agnostic. Engine artifacts are served unmodified from
 `public/stockfish/` (GPL isolation, no bundling), multithreaded only when
 `crossOriginIsolated` (COEP `credentialless` — ADR 005).
 
-## 3. Analysis pipeline (ADRs 006, 007)
+## 3. Analysis pipeline (ADRs 006, 007, 008)
 
-1. Client evaluates every *position* (MultiPV=2, depth 16 default), consulting
-   the shared **EPD-keyed evaluation cache** first (`GET /v1/evals`).
+1. Client evaluates every *position* (MultiPV=2, depth 16 default). It first
+   consults the **EPD-keyed evaluation cache** (`GET /v1/evals`), which returns
+   the caller's own earlier evals plus trusted server evals. Client-submitted
+   evals are never shared across users (ADR 008).
 2. Raw evals stream to `PUT /v1/games/:id/analysis` in batches of 8 —
    **resumable** via the `lastPly` frontier; interrupting and resuming
    re-analyses nothing.

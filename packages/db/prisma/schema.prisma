@@ -100,6 +100,7 @@ model User {
   subscription Subscription?
   apiKeys      ApiKey[]
   webhooks     Webhook[]
+  clientEvals  ClientEvaluation[]
 }
 
 model Organization {
@@ -230,7 +231,9 @@ model MoveAnalysis {
   @@unique([analysisId, ply])
 }
 
-/// Cross-user position evaluation cache (ADR 006)
+/// Trusted cross-user position evaluation cache (ADR 006, ADR 008).
+/// Only server-produced evaluations are written here — never client
+/// submissions, which live per-user in ClientEvaluation.
 model EngineEvaluation {
   id          String   @id @default(cuid())
   epd         String   @unique
@@ -244,6 +247,29 @@ model EngineEvaluation {
   multiPv     Json?
   nodes       BigInt?
   updatedAt   DateTime @updatedAt
+}
+
+/// Client-submitted evaluations, scoped to the submitting user (ADR 008).
+/// Untrusted: used only for that user's own analyses and cache lookups,
+/// never shared across users. Same shape as EngineEvaluation.
+model ClientEvaluation {
+  id          String   @id @default(cuid())
+  userId      String
+  epd         String
+  engineId    String
+  depth       Int
+  evalCp      Int?
+  evalMate    Int?
+  bestMoveUci String
+  pv          String
+  /// MultiPV lines: [{ moveUci, cp?, mate?, pv }]
+  multiPv     Json?
+  nodes       BigInt?
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, epd])
 }
 
 // ─────────────────────────────────────────────────────────── openings ───────

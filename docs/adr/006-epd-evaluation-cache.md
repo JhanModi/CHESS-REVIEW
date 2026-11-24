@@ -1,6 +1,7 @@
 # ADR 006 — Position-keyed engine evaluation cache (EPD)
 
-- Status: accepted
+- Status: accepted — amended by [ADR 008](008-eval-trust-per-user-client-evals.md)
+  (the shared cache holds trusted server evals only; client evals are per-user)
 - Date: 2026-07-13
 
 ## Context
