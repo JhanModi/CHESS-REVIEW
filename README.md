@@ -8,7 +8,7 @@ dashboards — with original UI, branding and implementation.
 
 ![CI](https://github.com/JhanModi/CHESS-REVIEW/actions/workflows/ci.yml/badge.svg)
 &nbsp;![stack](https://img.shields.io/badge/stack-Next.js%2015%20·%20NestJS%20·%20Prisma%20·%20Stockfish%2018-6d5ae6)
-&nbsp;![license](https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey)
+&nbsp;![license](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)
 
 ## What works today
 
@@ -107,9 +107,14 @@ full design.
 
 ## License & credits
 
-Source-available for review — **all rights reserved** (see [LICENSE](LICENSE)).
-Bundled third-party artifacts: **Stockfish 18**
-(GPL-3.0) is served as an unmodified separate WASM artifact and spoken to over
-UCI; **rhosgfx** piece set (CC0); **lichess-org/chess-openings** data (public
-domain); chessops (GPL-3.0-or-later — review before commercial distribution,
-or swap for a permissive move-gen library at the `chess-core` seam).
+Free software under the **GNU GPL v3.0 or later**: see [LICENSE](LICENSE) for
+the full text and [NOTICE](NOTICE) for the copyright and third-party notices.
+Third-party components:
+- **Stockfish 18** (GPL-3.0). Served as an unmodified, separate WASM artifact
+  and spoken to over UCI.
+- **chessops** (GPL-3.0-or-later).
+- **rhosgfx** piece set (CC0).
+- **lichess-org/chess-openings** data (public domain).
+
+The rationale is in
+[ADR 009](docs/adr/009-licensing-gpl.md).

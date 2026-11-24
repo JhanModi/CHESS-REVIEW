@@ -1,6 +1,8 @@
 # ADR 003 — Engine abstraction with WASM-first analysis
 
-- Status: accepted
+- Status: accepted. Amended by [ADR 009](009-licensing-gpl.md): server images
+  may include an unmodified native Stockfish binary, and the browser still
+  loads the unbundled WASM artifact.
 - Date: 2026-07-13
 
 ## Context

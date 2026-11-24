@@ -1,0 +1,30 @@
+Tempo — AI-powered chess analysis
+Copyright (C) 2026 Jhan Modi
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program (see LICENSE). If not, see <https://www.gnu.org/licenses/>.
+
+SPDX-License-Identifier: GPL-3.0-or-later
+
+--------------------------------------------------------------------------
+Third-party components (governed by their own licenses)
+--------------------------------------------------------------------------
+
+- Stockfish 18 — GPL-3.0. Served as an unmodified, separate WebAssembly
+  artifact (apps/web/public/stockfish/) and communicated with over the UCI
+  protocol. Source: https://github.com/official-stockfish/Stockfish
+- chessops — GPL-3.0-or-later. Move generation and PGN parsing (via
+  @tempo/chess-core). https://github.com/niklasf/chessops
+- rhosgfx chess piece set — CC0-1.0 (public domain dedication).
+- lichess-org/chess-openings ECO dataset — public domain.
+
+When a new dependency, dataset or model is introduced, add its license here.
