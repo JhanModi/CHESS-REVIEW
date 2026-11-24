@@ -7,11 +7,11 @@ A complete, free public deployment:
 | Web (Next.js) | **Vercel** Hobby | Free, no card | builds from GitHub |
 | API (NestJS) | **Render** free web service | Free, no card | sleeps after ~15 min idle → ~30–50 s cold start |
 | Postgres | **Neon** free tier | Free, no card | serverless Postgres |
-| Redis | — omitted — | — | API uses in-process queue/cache when `REDIS_URL` is unset |
+| Redis | — omitted — | — | API uses an in-process job queue when `REDIS_URL` is unset (no Redis cache layer exists; the eval cache is Postgres) |
 | Auth | **Clerk** free tier | Free | start on the existing dev instance; production instance needs DNS |
 
 Committed artifacts: [`render.yaml`](../render.yaml) (API blueprint),
-[`vercel.json`](../vercel.json) (web build).
+[`apps/web/vercel.json`](../apps/web/vercel.json) (web build).
 
 ---
 
@@ -148,7 +148,8 @@ Run through the live site and confirm each item:
   stores games and derives stats from submitted evals. This is *why* the free
   Render tier is sufficient.
 - **Redis is optional and left OFF.** With `REDIS_URL` unset the API uses an
-  in-process queue + cache — correct for a single instance. Upstash's free tier
+  in-process job queue — correct for a single instance (there is no Redis
+  cache layer; the eval cache is the Postgres `EngineEvaluation` table). Upstash's free tier
   is supported (set `REDIS_URL` to its `rediss://` URL), but BullMQ's polling
   burns Upstash's daily command quota quickly, so in-process is the better free
   choice until you run multiple API instances.

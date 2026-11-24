@@ -68,25 +68,35 @@ transport-agnostic. Engine artifacts are served unmodified from
 Per-user classification thresholds live in `User.settings.thresholds` and are
 merged over defaults at derivation time.
 
-## 4. AI explanation pipeline (Step 4 — designed, schema shipped)
+## 4. AI coach: verified multi-agent pipeline (roadmap Phase 3; ADR 010)
 
 ```
-MoveAnalysis ─► FeatureExtractor (pure TS) ─► prompt template ─► LlmAdapter ─► AiExplanation cache ─► SSE stream
+api /v1/coach (SSE) ─► agents (Python · LangGraph: router → explainer → critic)
+                           │ MCP tools (read-only, per-request scoped)
+                           ▼
+                       chess-tools (Node: chess-core features/motifs + engine-core Stockfish)
 ```
 
-- Features (sacrifice flags, hanging pieces, phase, motifs) are computed
-  deterministically in `@tempo/chess-core`; the LLM narrates, it never computes.
-- `@tempo/ai-core` will define `LlmAdapter` with Anthropic/OpenAI/Gemini
-  implementations, switchable per request; graceful degradation when no key is
-  configured.
-- Cache key: `(moveAnalysisId, provider, model, skillLevel, language)` — an
-  explanation is generated once, ever. Multi-language and four skill levels are
-  first-class columns.
+- **Features are computed deterministically** in `@tempo/chess-core`:
+  sacrifice flags, hanging pieces, phase and motifs. The LLM narrates; it
+  never computes.
+- **Every claim is checked.** The explainer emits typed claims (move,
+  evaluation, motif). The critic verifies each one through the tools, and
+  unverifiable claims never reach the user.
+- **Python never re-implements chess maths.** It reaches `chess-core` only
+  through the chess-tools MCP server (ADR 010). This replaces the earlier
+  single-call `@tempo/ai-core` `LlmAdapter` design.
+- **Explanations are cached** in `AiExplanation`, keyed by
+  `(moveAnalysisId, provider, model, skillLevel, language)`. Phase 6 adds a
+  prompt version to that key.
+- **Without a configured LLM** the coach degrades gracefully. This is the
+  public demo's mode.
 
 ## 5. Performance
 
-- **Resumable + deduplicated analysis** (above): popular openings are analysed
-  once platform-wide.
+- **Resumable analysis** (above). The EPD cache serves each user their own
+  earlier evals plus trusted server evals. Cross-user deduplication returns
+  when the server worker writes trusted rows (ADR 008).
 - Engine WASM/NNUE and piece SVGs ship with `Cache-Control: immutable`
   (CDN-ready); the ~7 MB engine loads lazily on first analysis.
 - Games lists are cursor-paginated; review state is client-side (Zustand) with
