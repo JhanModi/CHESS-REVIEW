@@ -3,7 +3,8 @@
 # hosted free on Neon. See docs/DEPLOYMENT.md for the full walkthrough.
 #
 # Redis is intentionally omitted: with REDIS_URL unset the API runs its job
-# queue and cache in-process (fine for a single free instance).
+# job queue in-process (fine for a single free instance). There is no Redis
+# cache layer; the eval cache lives in Postgres.
 services:
   - type: web
     name: tempo-api

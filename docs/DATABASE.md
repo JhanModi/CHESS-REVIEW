@@ -14,9 +14,10 @@ User ─┬─ Game ─┬─ Move            (one row per ply: san/uci/fenAfter
       ├─ Membership ── Organization
       ├─ Puzzle
       ├─ ApiKey / Webhook
+      ├─ ClientEvaluation  (the user's own submitted evals — ADR 008)
       └─ Subscription ── Payment
 
-EngineEvaluation   (standalone: the cross-user EPD eval cache)
+EngineEvaluation   (standalone: the trusted cross-user EPD eval cache, server evals only)
 Opening            (3,803 rows seeded from lichess-org/chess-openings)
 ```
 
@@ -31,9 +32,13 @@ Opening            (3,803 rows seeded from lichess-org/chess-openings)
 - **`Analysis` vs `MoveAnalysis`**: game-level rollups (accuracy, ACPL, status,
   `lastPly` resume cursor, summary JSON) vs per-ply engine output + derived
   labels. `@@unique([analysisId, ply])` lets derivation upsert idempotently.
-- **`EngineEvaluation`** (ADR 006): keyed by EPD, depth-monotonic writes,
-  stores MultiPV lines as JSON. Shared across users — evaluations contain no
-  user data.
+- **`EngineEvaluation`** (ADRs 006, 008): keyed by EPD, depth-monotonic
+  writes, stores MultiPV lines as JSON. Shared across users, so it is
+  **trusted, server-produced evals only**. Client submissions never go here.
+- **`ClientEvaluation`** (ADR 008) has the same shape as `EngineEvaluation`,
+  unique on `(userId, epd)`. It holds the evals a user's browser submitted.
+  They are untrusted, used only for that user's own derivations and lookups
+  (the deeper of own vs trusted wins), and cascade-deleted with the user.
 - **`Opening.epd` unique** enables transposition-safe recognition; games link
   by FK so "top openings" is a join, not string matching.
 - **Future-feature tables shipped now** (Organizations, ApiKey, Webhook,

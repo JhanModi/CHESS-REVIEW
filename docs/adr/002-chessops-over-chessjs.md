@@ -1,6 +1,7 @@
 # ADR 002 — chessops as the chess rules/PGN library
 
-- Status: accepted
+- Status: accepted. The licensing consequence is superseded by
+  [ADR 009](009-licensing-gpl.md): Tempo is now GPL-3.0-or-later.
 - Date: 2026-07-13
 
 ## Context

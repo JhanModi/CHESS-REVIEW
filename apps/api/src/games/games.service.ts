@@ -233,11 +233,15 @@ export class GamesService {
 
   /**
    * Deletes every game owned by the user (and, via cascade, their moves and
-   * analysis). Scoped strictly to `userId`, so one account can never clear
-   * another's data. Returns how many games were removed.
+   * analysis), plus the engine evaluations they submitted (ADR 008). Scoped
+   * strictly to `userId`, so one account can never clear another's data.
+   * Returns how many games were removed.
    */
   async deleteAll(userId: string): Promise<{ deleted: number }> {
-    const { count } = await this.prisma.game.deleteMany({ where: { userId } });
+    const [{ count }] = await this.prisma.$transaction([
+      this.prisma.game.deleteMany({ where: { userId } }),
+      this.prisma.clientEvaluation.deleteMany({ where: { userId } }),
+    ]);
     return { deleted: count };
   }
 

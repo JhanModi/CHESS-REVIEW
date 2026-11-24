@@ -1,6 +1,6 @@
 # Tempo — Product Requirements Document
 
-_Status: living document. Last meaningful update: 2026-07-13._
+_Status: living document. Last meaningful update: 2026-11-24 (ChessMind direction, §7)._
 
 ## 1. Vision
 
@@ -52,16 +52,16 @@ analysis platforms, not a clone of any.
   distribution, top openings, recent games.
 - Public share pages. Auth via Clerk (Google + email/password).
 
-### Planned (mapped to the roadmap in the README)
-- **M7** Server engine fleet: native Stockfish workers, SSE progress, spot
-  re-verification of client evals.
-- **M8** Tactical + endgame pattern detection (forks, pins, skewers,
-  discovered attacks, back-rank, smothered, Greek gift, sacrifices,
-  zwischenzug; Lucena, Philidor, opposition, fortress, rook/queen/minor
-  endings) surfaced as motif tags.
-- **M9** AI coach: per-move natural-language explanation at Beginner /
-  Intermediate / Advanced / Master, multi-language, streaming, cached;
-  switchable provider (Anthropic/OpenAI/Gemini). Requires an API key.
+### Planned: the ChessMind track (active; see §7 and [docs/ROADMAP.md](docs/ROADMAP.md))
+It replaces the old M7–M9:
+- **M7 → Phases 1 and 3.** Eval trust is done (ADR 008). The server Stockfish
+  worker comes in Phase 3.
+- **M8 → Phase 3, trimmed** to four motifs: hanging piece, fork, pin and mate
+  threat.
+- **M9 → Phases 3–6.** The AI coach becomes a verified multi-agent coach,
+  backed by an eval study.
+
+### Paused: product track
 - **M10** Training: guess-the-best-move, puzzle generation from your blunders,
   learn-from-your-blunders spaced repetition, interactive "find the better
   move" review.
@@ -97,3 +97,41 @@ analysis platforms, not a clone of any.
 - Famous sacrifices classify as Brilliant (validated: Kasparov–Topalov 1999
   24.Rxd4!! / 25.Re7+!!).
 - Dashboard reflects real history and trends.
+
+## 7. ChessMind: the verified coach (current direction)
+
+**Goal.** Tempo is now primarily a public engineering portfolio and learning
+project, not a product chasing users. It should be practical enough to use,
+simple enough to explain in five minutes, and deep enough to learn from.
+
+**Problem.** LLMs explain chess fluently and wrongly. They invent tactics,
+misread evaluations and suggest illegal moves.
+
+**Approach.**
+- The coach's agents produce **typed claims**: a move, an evaluation or a
+  motif.
+- A critic verifies every claim against Stockfish and `chess-core` before
+  anything reaches the user. Claims that can't be verified are dropped.
+- The LLM narrates facts; it never computes them. This extends §3's
+  "never invents evaluation" principle to a multi-agent system.
+
+**Research question.** How much does each layer (tools, critic, token
+optimisation) improve verified-claim rate and reduce hallucinated moves, and
+what does it cost in tokens and latency? The study is reproducible: one
+command, local models with pinned digests, and confidence intervals.
+
+**Personalisation.** A small rating-conditioned transformer predicts what
+players at the user's level would play, so coaching can say "most 1400s miss
+this". That is the project's deep-learning component.
+
+**Constraints.**
+- **Fair play:** post-game analysis and training only, never assistance in
+  live games.
+- **Cost:** the LLMs are local (Ollama) or opt-in free-tier hosted models.
+  The public demo runs in no-LLM mode.
+- **Licensing:** GPL-3.0-or-later (ADR 009).
+- **Architecture:** Python agents reach the TypeScript chess maths only
+  through the chess-tools MCP server (ADR 010).
+- **Scope:** every component must answer "why does this exist?" in its ADR.
+
+Phases, gates and cut order are in [docs/ROADMAP.md](docs/ROADMAP.md).

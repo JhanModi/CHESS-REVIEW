@@ -30,8 +30,13 @@ export class AnalysisController {
   }
 
   @Get("evals")
-  @ApiOperation({ summary: "Shared position-eval cache lookup (comma-separated EPDs)" })
-  lookup(@Query(new ZodValidationPipe(evalCacheQuerySchema)) query: { epds: string }) {
-    return this.analysis.lookup(query.epds.split(",").map((epd) => epd.trim()).filter(Boolean));
+  @ApiOperation({
+    summary: "Position-eval cache lookup (comma-separated EPDs): your own evals plus trusted server evals",
+  })
+  lookup(
+    @CurrentUser() user: RequestUser,
+    @Query(new ZodValidationPipe(evalCacheQuerySchema)) query: { epds: string },
+  ) {
+    return this.analysis.lookup(user.id, query.epds.split(",").map((epd) => epd.trim()).filter(Boolean));
   }
 }

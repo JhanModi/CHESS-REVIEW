@@ -8,7 +8,7 @@ dashboards — with original UI, branding and implementation.
 
 ![CI](https://github.com/JhanModi/CHESS-REVIEW/actions/workflows/ci.yml/badge.svg)
 &nbsp;![stack](https://img.shields.io/badge/stack-Next.js%2015%20·%20NestJS%20·%20Prisma%20·%20Stockfish%2018-6d5ae6)
-&nbsp;![license](https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey)
+&nbsp;![license](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)
 
 ## What works today
 
@@ -20,7 +20,9 @@ dashboards — with original UI, branding and implementation.
   stream to the server, which derives win% (lichess model), per-move accuracy,
   centipawn loss and the full classification set — book, forced, brilliant,
   great, best, excellent, good, inaccuracy, mistake, blunder, miss.
-  Interruptible + resumable; positions dedupe across users via an EPD cache.
+  Interruptible + resumable; positions are cached by EPD. Client-submitted
+  evals stay private to the user who submitted them
+  ([ADR 008](docs/adr/008-eval-trust-per-user-client-evals.md)).
 - **Review**: animated custom board (piece-identity animations, last-move /
   check highlights, engine arrows, classification glyphs), eval bar,
   win-probability graph with click-to-jump, engine lines as SAN, move list with
@@ -47,9 +49,16 @@ packages/
   engine-core   EngineAdapter contract · UCI codec · UciSession (16 tests)
   types         zod schemas + DTOs shared web↔api
   db            Prisma schema · migrations · ECO seed
-  ai-core       LLM adapter seam (Step 4)
-docs/           architecture · API · database · ADRs 001–007
+docs/           architecture · API · database · roadmap · ADRs 001–010
 ```
+
+Planned in the [roadmap](docs/ROADMAP.md):
+- `apps/chess-tools` (MCP server)
+- `apps/agents` (Python, LangGraph)
+- `apps/move-model` (ONNX)
+- `ml/` (transformer training)
+- `eval/` (the study)
+- `spikes/`
 
 ## Getting started
 
@@ -79,7 +88,7 @@ for networkless verification) `CLERK_JWT_KEY`.
 
 | Command | Effect |
 |---|---|
-| `pnpm test` | vitest suites (chess-core, engine-core) |
+| `pnpm test` | vitest suites (chess-core, engine-core, api, web) |
 | `pnpm typecheck` | strict TS across the workspace |
 | `pnpm build` | production builds (packages → api → web) |
 | `pnpm --filter @tempo/chess-core build:openings` | regenerate the opening book from the TSVs |
@@ -87,29 +96,28 @@ for networkless verification) `CLERK_JWT_KEY`.
 
 ## Roadmap
 
-The foundational product above works today. Designed next — each against
-interfaces and schema already present in the repo:
+Next up is **ChessMind**, a coach that can't make things up. LLMs hallucinate
+when explaining chess, so every claim the coach makes (moves, evaluations,
+tactics) is checked against Stockfish before you see it. Then an eval study
+measures how much that verification improves accuracy and what it costs in
+tokens. A small rating-conditioned transformer adds what players at your level
+would actually play.
 
-- **Server-side engine fleet** — native Stockfish workers behind the same
-  `EngineAdapter`, streaming progress over SSE for heavy batch analysis
-- **Tactical & endgame detection** — motif tags (forks, pins, skewers, back-rank,
-  Greek gift, sacrifices; Lucena, Philidor, opposition, …)
-- **AI coach** — per-move natural-language explanation at four skill levels,
-  multi-language, streaming, provider-switchable (Anthropic / OpenAI / Gemini)
-- **Training** — puzzles generated from your own blunders, guess-the-best-move,
-  spaced repetition
-- **Teams & coaching** — organizations, coach/student mode, study collections
-- **Platform** — Stripe tiers, admin dashboard, public API keys + webhooks,
-  containerized deployment + CDN
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [PRD.md](PRD.md) for the
-full design.
+The phases, gates and scope cuts are in [docs/ROADMAP.md](docs/ROADMAP.md).
+Product features beyond that (training modes, teams, billing, public API) are
+paused. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [PRD.md](PRD.md)
+for the full design.
 
 ## License & credits
 
-Source-available for review — **all rights reserved** (see [LICENSE](LICENSE)).
-Bundled third-party artifacts: **Stockfish 18**
-(GPL-3.0) is served as an unmodified separate WASM artifact and spoken to over
-UCI; **rhosgfx** piece set (CC0); **lichess-org/chess-openings** data (public
-domain); chessops (GPL-3.0-or-later — review before commercial distribution,
-or swap for a permissive move-gen library at the `chess-core` seam).
+Free software under the **GNU GPL v3.0 or later**: see [LICENSE](LICENSE) for
+the full text and [NOTICE](NOTICE) for the copyright and third-party notices.
+Third-party components:
+- **Stockfish 18** (GPL-3.0). Served as an unmodified, separate WASM artifact
+  and spoken to over UCI.
+- **chessops** (GPL-3.0-or-later).
+- **rhosgfx** piece set (CC0).
+- **lichess-org/chess-openings** data (public domain).
+
+The rationale is in
+[ADR 009](docs/adr/009-licensing-gpl.md).
